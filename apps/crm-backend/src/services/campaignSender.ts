@@ -77,8 +77,8 @@ export async function triggerCampaignSend(
         channel:     campaign.channel,
       },
       opts: {
-        attempts:         3,
-        backoff: { type: 'exponential' as const, delay: 2000 },
+        attempts:         5,
+        backoff: { type: 'exponential' as const, delay: 3000 },
         removeOnComplete: 1000,
         removeOnFail:     500,
       },

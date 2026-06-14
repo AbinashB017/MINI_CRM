@@ -100,10 +100,19 @@ export function createSendWorker() {
   )
 
   worker.on('failed', async (job, err) => {
+    const attemptsUsed = job?.attemptsMade ?? 0
+    const maxAttempts  = job?.opts?.attempts ?? 1
+    const isFinal      = attemptsUsed >= maxAttempts
+
     console.error(
-      `❌ Job ${job?.id} failed (attempt ${job?.attemptsMade}): ${err.message}`
+      `❌ Job ${job?.id} failed (attempt ${attemptsUsed}/${maxAttempts}): ${err.message}${
+        isFinal ? ' — FINAL, marking failed in DB' : ' — will retry'
+      }`
     )
-    if (job?.data?.recipientId) {
+
+    // Only write 'failed' to DB once ALL retries are exhausted.
+    // If there are retries remaining, BullMQ will re-queue the job automatically.
+    if (isFinal && job?.data?.recipientId) {
       try {
         await prisma.campaignRecipient.update({
           where: { id: job.data.recipientId },

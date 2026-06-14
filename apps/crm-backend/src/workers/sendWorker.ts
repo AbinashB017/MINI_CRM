@@ -91,11 +91,7 @@ export function createSendWorker() {
       console.log(`✅ Sent to ${to} (${channel}) — recipient: ${recipientId}`)
     },
     {  connection:  bullMQConnection,
-      concurrency: 2, // process 2 messages simultaneously
-      limiter: {
-        max: 2, // maximum 2 jobs
-        duration: 1000, // per 1 second
-      }
+      concurrency: 20 // process 20 messages simultaneously
     }
   )
 

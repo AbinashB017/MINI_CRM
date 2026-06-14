@@ -1,0 +1,21 @@
+{
+  "name": "xeno-crm",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n CRM,STUB,UI -c blue,coral,green \"npm run dev -w apps/crm-backend\" \"npm run dev -w apps/channel-stub\" \"npm run dev -w apps/frontend\"",
+    "build": "npm run build -w apps/crm-backend && npm run build -w apps/channel-stub && npm run build -w apps/frontend",
+    "seed": "npm run seed -w apps/crm-backend",
+    "migrate": "npm run migrate -w apps/crm-backend",
+    "generate": "npm run generate -w apps/crm-backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

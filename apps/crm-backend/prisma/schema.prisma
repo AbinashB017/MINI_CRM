@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Customer {
+  id           String    @id @default(cuid())
+  externalId   String?   @unique
+  firstName    String
+  lastName     String
+  email        String    @unique
+  phone        String?
+  city         String?
+  totalSpend   Float     @default(0)
+  orderCount   Int       @default(0)
+  lastOrderAt  DateTime?
+  firstOrderAt DateTime?
+  tags         String[]  @default([])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  orders             Order[]
+  campaignRecipients CampaignRecipient[]
+
+  @@index([totalSpend])
+  @@index([lastOrderAt])
+  @@index([orderCount])
+  @@index([city])
+  @@index([tags], type: Gin)
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  customerId  String
+  orderNumber String   @unique
+  amount      Float
+  status      String   @default("completed")
+  channel     String?
+  items       Json     @default("[]")
+  orderedAt   DateTime
+  createdAt   DateTime @default(now())
+
+  campaignId  String?
+  campaign    Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model Segment {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  rules       Json
+  aiPrompt    String?
+  count       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  campaigns Campaign[]
+}
+
+model Campaign {
+  id              String    @id @default(cuid())
+  name            String
+  segmentId       String?
+  channel         String    @default("whatsapp")
+  messageTemplate String
+  status          String    @default("draft")
+  scheduledAt     DateTime?
+  sentAt          DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  segment    Segment?            @relation(fields: [segmentId], references: [id], onDelete: SetNull)
+  recipients CampaignRecipient[]
+  orders     Order[]
+}
+
+model CampaignRecipient {
+  id          String    @id @default(cuid())
+  campaignId  String
+  customerId  String
+  message     String
+  status      String    @default("pending")
+  failReason  String?
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  openedAt    DateTime?
+  readAt      DateTime?
+  clickedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, customerId])
+  @@index([campaignId])
+  @@index([customerId])
+  @@index([status])
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  messages  Json     @default("[]")
+  context   Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

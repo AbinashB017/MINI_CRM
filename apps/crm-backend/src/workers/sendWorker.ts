@@ -89,13 +89,11 @@ export function createSendWorker() {
       })
 
       console.log(`✅ Sent to ${to} (${channel}) — recipient: ${recipientId}`)
+      // ── 5. Manual Rate Limiting for Public URL DDOS Protection ────────────
+      await new Promise(r => setTimeout(r, 3000))
     },
     {  connection:  bullMQConnection,
-      concurrency: 1, // process 1 message simultaneously
-      limiter: {
-        max: 1, // maximum 1 job
-        duration: 3000, // per 3 seconds
-      }
+      concurrency: 1 // process 1 message simultaneously
     }
   )
 

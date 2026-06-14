@@ -93,7 +93,7 @@ export function createSendWorker() {
     {  connection:  bullMQConnection,
       concurrency: 2, // process 2 messages simultaneously
       limiter: {
-        max: 5, // maximum 5 jobs
+        max: 2, // maximum 2 jobs
         duration: 1000, // per 1 second
       }
     }
